@@ -155,82 +155,75 @@ void HideTrayIcon()
   Shell_NotifyIcon(NIM_DELETE, &nid);
 }
 
+extern inline UINT GetDarkIconId(int nStatus)
+{
+  switch (nStatus)
+  {
+    case STATUS_HIDDEN:
+      return IDI_TRAY_HIDDEN_DARK;
+    case STATUS_SHOWN:
+      return IDI_TRAY_SHOWN_DARK;
+    default:
+      return IDI_TRAY_DEFAULT_DARK;
+  }
+}
+
+extern inline UINT GetLightIconId(int nStatus)
+{
+  switch (nStatus)
+  {
+    case STATUS_HIDDEN:
+      return IDI_TRAY_HIDDEN_LIGHT;
+    case STATUS_SHOWN:
+      return IDI_TRAY_SHOWN_LIGHT;
+    default:
+      return IDI_TRAY_DEFAULT_LIGHT;
+  }
+}
+
 HICON GetStatusIcon(int nStatus)
 {
-  int nIconID;
+  HICON hIcon;
+  UINT uIconId;
 
   switch (g_settings.iIconTheme)
   {
     case ICON_THEME_AUTO:
       {
+        BOOL bResult;
         BOOL bLightTaskbar;
 
-        SystemUsesLightTheme(&bLightTaskbar);
+        bResult = SystemUsesLightTheme(&bLightTaskbar);
 
-        if (bLightTaskbar)
+        assert(bResult);
+        if (bResult)
         {
-          switch (nStatus)
-          {
-            case STATUS_HIDDEN:
-              nIconID = IDI_TRAY_HIDDEN_DARK;
-              break;
-            case STATUS_SHOWN:
-              nIconID = IDI_TRAY_SHOWN_DARK;
-              break;
-            default:
-              nIconID = IDI_TRAY_DEFAULT_DARK;
-              break;
-          }
+          uIconId = bLightTaskbar
+            ? GetDarkIconId(nStatus)
+            : GetLightIconId(nStatus);
         }
         else {
-          switch (nStatus)
-          {
-            case STATUS_HIDDEN:
-              nIconID = IDI_TRAY_HIDDEN_LIGHT;
-              break;
-            case STATUS_SHOWN:
-              nIconID = IDI_TRAY_SHOWN_LIGHT;
-              break;
-            default:
-              nIconID = IDI_TRAY_DEFAULT_LIGHT;
-              break;
-          }
+          MessageBox(NULL, L"Couldn't open taskbar theme registry key", NULL,
+              MB_OK | MB_ICONWARNING);
+          uIconId = GetLightIconId(nStatus);
         }
       }
       break;
-
     case ICON_THEME_DARK:
-      switch (nStatus)
-      {
-        case STATUS_HIDDEN:
-          nIconID = IDI_TRAY_HIDDEN_DARK;
-          break;
-        case STATUS_SHOWN:
-          nIconID = IDI_TRAY_SHOWN_DARK;
-          break;
-        default:
-          nIconID = IDI_TRAY_DEFAULT_DARK;
-          break;
-      }
+      uIconId = GetDarkIconId(nStatus);
       break;
-
     case ICON_THEME_LIGHT:
-      switch (nStatus)
-      {
-        case STATUS_HIDDEN:
-          nIconID = IDI_TRAY_HIDDEN_LIGHT;
-          break;
-        case STATUS_SHOWN:
-          nIconID = IDI_TRAY_SHOWN_LIGHT;
-          break;
-        default:
-          nIconID = IDI_TRAY_DEFAULT_LIGHT;
-          break;
-      }
+      uIconId = GetLightIconId(nStatus);
       break;
   }
 
-  return LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(nIconID));
+  hIcon = LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(uIconId));
+
+  assert(hIcon);
+  if (!hIcon)
+    MessageBox(NULL, L"Couldn't load tray icon", NULL, MB_OK | MB_ICONWARNING);
+
+  return hIcon;
 }
 
 void ShowTrayIcon()
@@ -1006,6 +999,7 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
   hMsgWindow = CreateWindowEx(0, L"HideVol", L"HideVol Window",
       0, 0, 0, 0, 0,
       HWND_MESSAGE, NULL, hInstance, NULL);
+
   if (g_settings.bShowTrayIcon)
     ShowTrayIcon();
 
