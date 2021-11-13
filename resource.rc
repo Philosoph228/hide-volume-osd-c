@@ -1,0 +1,41 @@
+#include <windows.h>
+#include <commctrl.h>
+#include "resource.h"
+
+CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "hide-volume-osd-c.exe.manifest"
+
+IDI_APPICON ICON "icon.ico"
+
+IDI_TRAY_DEFAULT_LIGHT  ICON "assets/icon/default-light.ico"
+IDI_TRAY_HIDDEN_LIGHT   ICON "assets/icon/hidden-light.ico"
+IDI_TRAY_SHOWN_LIGHT    ICON "assets/icon/shown-light.ico"
+IDI_TRAY_DEFAULT_DARK   ICON "assets/icon/default-dark.ico"
+IDI_TRAY_HIDDEN_DARK    ICON "assets/icon/hidden-dark.ico"
+IDI_TRAY_SHOWN_DARK     ICON "assets/icon/shown-dark.ico"
+
+IDR_TRAYPOPUP MENU
+BEGIN
+  POPUP "Context menu"
+  BEGIN
+    MENUITEM "&Show", IDM_SHOW
+    MENUITEM "&Hide", IDM_HIDE
+    MENUITEM "Settings", IDM_SETTINGS
+    MENUITEM "&Exit", IDM_EXIT
+  END
+END
+
+IDD_SETTINGS DIALOGEX DISCARDABLE  0, 0, 140, 200 
+EXSTYLE WS_EX_TOPMOST
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "HideVolumeOSD-C Settings"
+FONT 8, "MS Shell Dlg"
+BEGIN
+    PUSHBUTTON "&Cancel",IDOK,29,179,50,14
+    DEFPUSHBUTTON "&OK",IDCANCEL,83,179,50,14
+    /* CHECKBOX BS_3STATE is broken, using CONTROL */
+    CONTROL "Run at system startup",IDB_AUTORUN,WC_BUTTON,BS_3STATE | WS_TABSTOP,7,7,126,14
+    CHECKBOX "Display tray icon",IDB_SHOWTRAYICON,7,25,126,14,BS_AUTOCHECKBOX
+    LTEXT "Icon theme",-1,7,48,38,11
+    COMBOBOX IDCB_THEME,49,46,83,14,CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_TABSTOP
+    CONTROL "<a href=""https://github.com/Philosoph228/hide-volume-osd-c"">GitHub</a>",IDC_GITHUBLINK,WC_LINK,WS_TABSTOP,7,67,126,14
+END
